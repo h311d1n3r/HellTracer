@@ -1,4 +1,11 @@
-#pragma once
+#ifndef HELLTRACER_MAIN_TYPES_H
+#define HELLTRACER_MAIN_TYPES_H
+
+#include <string>
+#include <map>
+#include <vector>
+
+using namespace std;
 
 enum Register {
     RAX,
@@ -15,16 +22,23 @@ enum Register {
     R11,
     R12,
     R13,
-    r14,
+    R14,
     R15,
     RIP,
     ALL
 };
 
+extern map<string, Register> registersFromName;
+
 struct BinaryParams {
+    string binaryPath;
+    vector<string> binaryArgs;
+    string outputPath;
     unsigned long long int entryAddress;
     unsigned long long int startAddress;
     unsigned long long int endAddress;
-    Register* trackedRegisters;
-    unsigned long long int* trackedMemoryRegions = nullptr;
+    vector<Register> trackedRegisters;
+    vector<string> trackedMemoryRegions;
 };
+
+#endif

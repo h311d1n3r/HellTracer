@@ -1,4 +1,6 @@
-#pragma once
+#ifndef HELLTRACER_LOG_H
+#define HELLTRACER_LOG_H
+
 #include <string>
 #include <sstream>
 
@@ -16,9 +18,11 @@ class Logger {
 private:
     static Logger* instance;
 public:
-    static void log(LogLevel level, string message, bool bold, bool endLine, bool prefixSymbol);
-    static void log(LogLevel level, string message, bool bold, bool endLine) {log(level, message, bold, endLine, true);};
-    static void log(LogLevel level, string message, bool bold) {log(level, message, bold, true, true);};
-    static void log(LogLevel level, string message) {log(level, message, false, true, true);};
+    void log(LogLevel level, string message, bool bold, bool endLine, bool prefixSymbol);
+    void log(LogLevel level, string message, bool bold, bool endLine) {log(level, message, bold, endLine, true);};
+    void log(LogLevel level, string message, bool bold) {log(level, message, bold, true, true);};
+    void log(LogLevel level, string message) {log(level, message, false, true, true);};
     static Logger getLogger();
 };
+
+#endif
