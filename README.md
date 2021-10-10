@@ -21,7 +21,7 @@ A Linux x64 tool to trace registers and memory regions.
 ### Example
 #### Command
 The following command will write to ./out.csv, the content of the rcx and rip registers and memory regions from 0x400150 to 0x40015c and from rip+0 to rip+0x2 during the execution of the binary ./example.bin with program arguments "./example.bin username password" when rip is contained between 0x400000 and 0x500000.  
-`sudo helltracer ./example.bin -output ./out.csv -args "./example.bin username password" -entry 0x400000 -start 0x400000 -end 0x500000 --rip --rcx -mem 0x400150:0x40015c -mem rip+0:rip+0x2`
+`sudo helltracer ./example.bin -output ./out.csv -args "./example.bin username password" -entry 0x400000 -start 0x400000 -end 0x500000 --rip --rcx -mem rsp+0:rsp+4 -mem rip+0:rip+0x2`
 #### Result
 Here is the beginning of the resulting CSV file :  
   
