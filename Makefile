@@ -1,8 +1,8 @@
-HELLTRACER_NAME="helltracer"
+HELLTRACER_NAME=helltracer
 
-HELLTRACER_SRC="./src"
-HELLTRACER_INC="./headers"
-HELLTRACER_OUT="./bin"
+HELLTRACER_SRC=./src
+HELLTRACER_INC=./headers
+HELLTRACER_OUT=./bin
 
 CC=g++
 COMPILE_FLAGS=-std=c++17
