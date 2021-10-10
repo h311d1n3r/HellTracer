@@ -25,4 +25,6 @@ The following command will write to ./out.csv, the content of the rcx and rip re
 #### Result
 Here is the beginning of the resulting CSV file :  
   
-![result.png](https://i.imgur.com/dU6iVj2.png)
+<p align="center">
+  <img src="https://i.imgur.com/dU6iVj2.png" alt="result.png"/>
+</p>
