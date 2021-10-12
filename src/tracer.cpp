@@ -93,7 +93,10 @@ void HellTracer::writeStepResults(ofstream& outputFile, user_regs_struct regs) {
                     unsigned long long int off = 0;
                     if(inputToNumber(offStr, off))
                         memStart = parseRegValue(registersFromName[regName], regs, regs.rip) - off;
-                } else inputToNumber(val1, memStart);
+                } else {
+                    inputToNumber(val1, memStart);
+                    if(params.entryAddress) memStart = memStart - params.entryAddress + this->effectiveEntry;
+                }
             }
             sep = val2.find("+");
             if(sep != string::npos && sep != val2.length()-1) {
@@ -110,7 +113,10 @@ void HellTracer::writeStepResults(ofstream& outputFile, user_regs_struct regs) {
                     unsigned long long int off = 0;
                     if(inputToNumber(offStr, off))
                         memEnd = parseRegValue(registersFromName[regName], regs, regs.rip) - off;
-                } else inputToNumber(val2, memEnd);
+                } else {
+                    inputToNumber(val2, memEnd);
+                    if(params.entryAddress) memEnd = memEnd - params.entryAddress + this->effectiveEntry;
+                }
             }
             if(memEnd < memStart) {
                 unsigned long long int temp = memEnd;
