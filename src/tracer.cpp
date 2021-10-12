@@ -68,9 +68,15 @@ void HellTracer::writeStepResults(ofstream& outputFile, user_regs_struct regs) {
             }
         }
         for(string mem : this->params.trackedMemoryRegions) {
-            int sep = mem.find(":");
-            string val1 = mem.substr(0,sep);
-            string val2 = mem.substr(sep+1);
+            string subMem = mem;
+            bool printAscii = false;
+            if(!mem.find("ascii=")) {
+                subMem = mem.substr(6);
+                printAscii = true;
+            }
+            int sep = subMem.find(":");
+            string val1 = subMem.substr(0,sep);
+            string val2 = subMem.substr(sep+1);
             sep = val1.find("+");
             unsigned long long int memStart = 0, memEnd = 0;
             if(sep != string::npos && sep != val1.length()-1) {
@@ -115,7 +121,10 @@ void HellTracer::writeStepResults(ofstream& outputFile, user_regs_struct regs) {
             unsigned char* buf = (unsigned char*) malloc(size);
             pread(this->memoryFd, buf, size, memStart);
             outputFile << "=\"";
-            for(int i = 0; i < size; i++) outputFile << hex << setfill('0') << setw(2) << +buf[i];
+            for(int i = 0; i < size; i++) {
+                if(printAscii && buf[i] >= 0x20 && buf[i] <= 0x7e) outputFile << buf[i];
+                else outputFile << hex << setfill('0') << setw(2) << +buf[i];
+            }
             outputFile << "\",";
         }
         outputFile << endl;
