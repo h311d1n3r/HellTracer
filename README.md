@@ -12,7 +12,7 @@ A Linux x64 tool to trace registers and memory regions.
 `entry` -> Specifies the program entry point. e.g: 'entry 0x401000'  
 `start` -> Specifies the program start address for tracing. e.g: 'entry 0x4010f0'  
 `end` -> Specifies the program end address for tracing. e.g: 'entry 0x40115e'  
-`mem` -> Turns on tracing of the specified memory range. e.g: 'mem ascii=[[rbp-0x40]:4]', 'mem ascii=[@0x40200f:15]', 'mem ascii=[rsi]'  
+`mem` -> Turns on tracing of the specified memory range. e.g: 'mem ascii=[[rbp-0x40]:4]', 'mem ascii=[@0x40200f:15]', 'mem [rsi]'  
 `args` -> Specifies the arguments to be passed to the traced binary. e.g: 'args "./name.bin hello world"'  
 `output` -> Specifies the output file (.csv). e.g: 'output out.csv'
 ### Flags
