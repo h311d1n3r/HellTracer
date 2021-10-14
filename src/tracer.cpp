@@ -56,6 +56,90 @@ unsigned long long int HellTracer::parseRegValue(Register reg, user_regs_struct 
     return 0;
 }
 
+int HellTracer::parseMemStr(string mem, unsigned char*& buffer, user_regs_struct regs) {
+    mem = trim(mem);
+    if(!mem.find_first_of("[")) {
+        int lastIndex = mem.find_last_of("]");
+        bool end = lastIndex == mem.length()-1;
+        string pointerStr = mem.substr(1, lastIndex-1);
+        unsigned long long int size = sizeof(unsigned long long int);
+        if(pointerStr.find(":") != string::npos) {
+            inputToNumber(pointerStr.substr(pointerStr.find(":")+1), size);
+            pointerStr = pointerStr.substr(0, pointerStr.find(":"));
+        }
+        buffer = (unsigned char*) malloc(sizeof(unsigned long long int));
+        memset(buffer, 0, sizeof(unsigned long long int));
+        this->parseMemStr(pointerStr, buffer, regs);
+        unsigned long long int addr = *((unsigned long long int*)buffer);
+        buffer = (unsigned char*) malloc(size);
+        unsigned long long int readSize = pread(this->memoryFd, buffer, size, addr);
+        if(end) return readSize;
+        else {
+            stringstream pointedValStr;
+            pointedValStr << "0x";
+            for(int i = readSize-1; i >= 0; i--) pointedValStr << hex << setfill('0') << setw(2) << +buffer[i];
+            return parseMemStr(pointedValStr.str()+mem.substr(lastIndex+1), buffer, regs);
+        }
+    } else {
+        string skipped = "";
+        while(mem.length() > 0) {
+            if(!mem.find("+")) {
+                string addStr = mem.substr(1);
+                parseMemStr(skipped, buffer, regs);
+                unsigned long long int add1 = *((unsigned long long int*) buffer);
+                parseMemStr(addStr, buffer, regs);
+                unsigned long long int add2 = *((unsigned long long int*) buffer);
+                unsigned long long int result = add1 + add2;
+                buffer = (unsigned char*) &result;
+                return sizeof(result);
+            } else if(!mem.find("-")) {
+                string subStr = mem.substr(1);
+                parseMemStr(skipped, buffer, regs);
+                unsigned long long int sub1 = *((unsigned long long int*) buffer);
+                parseMemStr(subStr, buffer, regs);
+                unsigned long long int sub2 = *((unsigned long long int*) buffer);
+                unsigned long long int result = sub1 - sub2;
+                buffer = (unsigned char*) &result;
+                return sizeof(result);
+            } else if(!mem.find("*")) {
+                string mulStr = mem.substr(1);
+                parseMemStr(skipped, buffer, regs);
+                unsigned long long int mul1 = *((unsigned long long int*) buffer);
+                parseMemStr(mulStr, buffer, regs);
+                unsigned long long int mul2 = *((unsigned long long int*) buffer);
+                unsigned long long int result = mul1 * mul2;
+                buffer = (unsigned char*) &result;
+                return sizeof(result);
+            } else if(!mem.find("/")) {
+                string divStr = mem.substr(1);
+                parseMemStr(skipped, buffer, regs);
+                unsigned long long int div1 = *((unsigned long long int*) buffer);
+                parseMemStr(divStr, buffer, regs);
+                unsigned long long int div2 = *((unsigned long long int*) buffer);
+                unsigned long long int result = div1 / div2;
+                buffer = (unsigned char*) &result;
+                return sizeof(result);
+            } else {
+                skipped += mem.at(0);
+                mem = mem.substr(1);
+            }
+        }
+        if(skipped.length() >= 0) {
+            unsigned long long int val;
+            bool relativeToEntry = false;
+            if(!skipped.find("@")) {
+                relativeToEntry = true;
+                skipped = skipped.substr(1);
+            }
+            if(!inputToNumber(skipped, val)) val = parseRegValue(registersFromName[skipped], regs, regs.rip);
+            if(relativeToEntry) val = val - this->params.entryAddress + this->effectiveEntry;
+            buffer = (unsigned char*) &val;
+            return sizeof(val);
+        }
+    }
+    return -1;
+}
+
 void HellTracer::writeStepResults(ofstream& outputFile, user_regs_struct regs) {
     unsigned long long int rip = this->params.entryAddress ? (this->params.entryAddress + regs.rip - this->effectiveEntry) : regs.rip;
     if((!params.startAddress || params.startAddress <= rip) && (!params.endAddress || params.endAddress >= rip)) {
@@ -74,62 +158,12 @@ void HellTracer::writeStepResults(ofstream& outputFile, user_regs_struct regs) {
                 subMem = mem.substr(6);
                 printAscii = true;
             }
-            int sep = subMem.find(":");
-            string val1 = subMem.substr(0,sep);
-            string val2 = subMem.substr(sep+1);
-            sep = val1.find("+");
-            unsigned long long int memStart = 0, memEnd = 0;
-            if(sep != string::npos && sep != val1.length()-1) {
-                string regName = val1.substr(0,sep);
-                string offStr = val1.substr(sep+1);
-                unsigned long long int off = 0;
-                if(inputToNumber(offStr, off))
-                    memStart = parseRegValue(registersFromName[regName], regs, regs.rip) + off;
-            } else {
-                sep = val1.find("-");
-                if(sep != string::npos && sep != val1.length()-1) {
-                    string regName = val1.substr(0,sep);
-                    string offStr = val1.substr(sep+1);
-                    unsigned long long int off = 0;
-                    if(inputToNumber(offStr, off))
-                        memStart = parseRegValue(registersFromName[regName], regs, regs.rip) - off;
-                } else {
-                    inputToNumber(val1, memStart);
-                    if(params.entryAddress) memStart = memStart - params.entryAddress + this->effectiveEntry;
-                }
-            }
-            sep = val2.find("+");
-            if(sep != string::npos && sep != val2.length()-1) {
-                string regName = val2.substr(0,sep);
-                string offStr = val2.substr(sep+1);
-                unsigned long long int off = 0;
-                if(inputToNumber(offStr, off))
-                    memEnd = parseRegValue(registersFromName[regName], regs, regs.rip) + off;
-            } else {
-                sep = val2.find("-");
-                if(sep != string::npos && sep != val2.length()-1) {
-                    string regName = val2.substr(0,sep);
-                    string offStr = val2.substr(sep+1);
-                    unsigned long long int off = 0;
-                    if(inputToNumber(offStr, off))
-                        memEnd = parseRegValue(registersFromName[regName], regs, regs.rip) - off;
-                } else {
-                    inputToNumber(val2, memEnd);
-                    if(params.entryAddress) memEnd = memEnd - params.entryAddress + this->effectiveEntry;
-                }
-            }
-            if(memEnd < memStart) {
-                unsigned long long int temp = memEnd;
-                memEnd = memStart;
-                memStart = temp;
-            }
-            unsigned long long int size = memEnd - memStart;
-            unsigned char* buf = (unsigned char*) malloc(size);
-            pread(this->memoryFd, buf, size, memStart);
+            unsigned char* buffer;
+            int read = this->parseMemStr(subMem, buffer, regs);
             outputFile << "=\"";
-            for(int i = 0; i < size; i++) {
-                if(printAscii && buf[i] >= 0x20 && buf[i] <= 0x7e) outputFile << buf[i];
-                else outputFile << hex << setfill('0') << setw(2) << +buf[i];
+            for(int i = 0; i < read; i++) {
+                if(printAscii && buffer[i] >= 0x20 && buffer[i] <= 0x7e) outputFile << buffer[i];
+                else outputFile << hex << setfill('0') << setw(2) << +buffer[i];
             }
             outputFile << "\",";
         }
@@ -201,6 +235,7 @@ void HellTracer::run() {
     }
     for(string mem : this->params.trackedMemoryRegions) {
         string upper = toUppercase(mem);
+        upper = trim(upper);
         for(int i = 0; i < upper.length()-1; i++) if(upper[i] == '0' && upper[i+1] == 'X') upper[i+1] = 'x';
         outputFile << upper << ",";
     }

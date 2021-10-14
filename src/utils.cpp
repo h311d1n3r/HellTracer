@@ -10,6 +10,16 @@ void split(const string &str, char c, vector<string> &elements) {
     }
 }
 
+string trim(string str) {
+    int index;
+    string output;
+    while((index = str.find_first_of(" ")) != string::npos) {
+        output += str.substr(0,index);
+        str = str.substr(index+1);
+    }
+    return output+str;
+}
+
 bool inputToNumber(string input, unsigned long long int& number) {
     size_t inputEnd = 0;
     int base = 10;

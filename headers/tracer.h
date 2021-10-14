@@ -13,6 +13,7 @@ private:
     int memoryFd;
     BinaryParams params;
     unsigned long long int parseRegValue(Register reg, user_regs_struct regs, unsigned long long int rip);
+    int parseMemStr(string mem, unsigned char*& buffer, user_regs_struct regs);
     void writeStepResults(ofstream& outputFile, user_regs_struct regs);
     void convertArgs(vector<string> args, char** execArgs);
     bool readBinaryHeader();

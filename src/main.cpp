@@ -56,7 +56,7 @@ void printHelpMessage() {
     paramsList << "\033[1;33m   entry\033[0;36m -> Specifies the program entry point. e.g: 'entry 0x401000'" << endl;
     paramsList << "\033[1;33m   start\033[0;36m -> Specifies the program start address for tracing. e.g: 'entry 0x4010f0'" << endl;
     paramsList << "\033[1;33m   end\033[0;36m -> Specifies the program end address for tracing. e.g: 'entry 0x40115e'" << endl;
-    paramsList << "\033[1;33m   mem\033[0;36m -> Turns on tracing of the specified memory range. e.g: 'mem 0x7f5310:0x7f531e', 'mem rsp+4:rsp+12', 'mem ascii=rbp-0x20:rbp-0x1c'" << endl;
+    paramsList << "\033[1;33m   mem\033[0;36m -> Turns on tracing of the specified memory regions. e.g: 'mem ascii=[[rbp-0x40]:4]', 'mem ascii=[@0x40200f:15]', 'mem ascii=[rsi]'" << endl;
     paramsList << "\033[1;33m   args\033[0;36m -> Specifies the arguments to be passed to the traced binary. e.g: 'args \"./name.bin hello world\"'" << endl;
     paramsList << "\033[1;33m   output\033[0;36m -> Specifies the output file (.csv). e.g: 'output out.csv'" << endl;
     Logger::getLogger().log(LogLevel::INFO, paramsList.str(), false, true, false);
@@ -114,77 +114,6 @@ bool analyseParam(string param, string val) {
                 return false;
             }
         } else if(!paramName.compare("mem")) {
-            string subVal = val;
-            if(!val.find("ascii=")) subVal = val.substr(6);
-            int sep = subVal.find(":");
-            if(sep != string::npos && sep != subVal.length()-1) {
-                string val1 = subVal.substr(0,sep);
-                string val2 = subVal.substr(sep+1);
-                sep = val1.find("+");
-                unsigned long long int number = 0;
-                if(sep != string::npos && sep != val1.length()-1) {
-                    string regName = val1.substr(0,sep);
-                    string off = val1.substr(sep+1);
-                    if(!registersFromName.count(regName)) {
-                        Logger::getLogger().log(LogLevel::FATAL, "Parameter mem : Register "+regName+" does not exist.");
-                        return false;
-                    }
-                    else if(!inputToNumber(off, number)) {
-                        Logger::getLogger().log(LogLevel::FATAL, "Parameter mem : "+off+" is not a number.");
-                        return false;
-                    }
-                } else {
-                    sep = val1.find("-");
-                    if(sep != string::npos && sep != val1.length()-1) {
-                        string regName = val1.substr(0,sep);
-                        string off = val1.substr(sep+1);
-                        if(!registersFromName.count(regName)) {
-                            Logger::getLogger().log(LogLevel::FATAL, "Parameter mem : Register "+regName+" does not exist.");
-                            return false;
-                        }
-                        else if(!inputToNumber(off, number)) {
-                            Logger::getLogger().log(LogLevel::FATAL, "Parameter mem : "+off+" is not a number.");
-                            return false;
-                        }
-                    } else if(!inputToNumber(val1, number)) {
-                        Logger::getLogger().log(LogLevel::FATAL, "Parameter mem : "+val1+" is not a number.");
-                        return false;
-                    }
-                }
-                sep = val2.find("+");
-                if(sep != string::npos && sep != val2.length()-1) {
-                    string regName = val2.substr(0,sep);
-                    string off = val2.substr(sep+1);
-                    if(!registersFromName.count(regName)) {
-                        Logger::getLogger().log(LogLevel::FATAL, "Parameter mem : Register "+regName+" does not exist.");
-                        return false;
-                    }
-                    else if(!inputToNumber(off, number)) {
-                        Logger::getLogger().log(LogLevel::FATAL, "Parameter mem : "+off+" is not a number.");
-                        return false;
-                    }
-                } else {
-                    sep = val2.find("-");
-                    if(sep != string::npos && sep != val2.length()-1) {
-                        string regName = val2.substr(0,sep);
-                        string off = val2.substr(sep+1);
-                        if(!registersFromName.count(regName)) {
-                            Logger::getLogger().log(LogLevel::FATAL, "Parameter mem : Register "+regName+" does not exist.");
-                            return false;
-                        }
-                        else if(!inputToNumber(off, number)) {
-                            Logger::getLogger().log(LogLevel::FATAL, "Parameter mem : "+off+" is not a number.");
-                            return false;
-                        }
-                    } else if(!inputToNumber(val2, number)) {
-                        Logger::getLogger().log(LogLevel::FATAL, "Parameter mem : "+val2+" is not a number.");
-                        return false;
-                    }
-                }
-            } else {
-                Logger::getLogger().log(LogLevel::FATAL, "Parameter mem requires value to be like 'start:end'");
-                return false;
-            }
             params.trackedMemoryRegions.push_back(val);
         } else if(!paramName.compare("args")) {
             vector<string> args;
