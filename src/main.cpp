@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <tracer.h>
 #include <utils.h>
+#include <signal.h>
 
 using namespace std;
 
@@ -16,10 +17,11 @@ const string TOOL_TITLE = "  _  _     _ _ _____                    \n"
                           " | __ / -_) | | | || '_/ _` / _/ -_) '_|\n"
                           " |_||_\\___|_|_| |_||_| \\__,_\\__\\___|_|  \n"
                           "                                        ";
-const string VERSION = "1.0";
+const string VERSION = "1.0.1";
 const string AUTHOR = "h311d1n3r";
 
 BinaryParams params;
+HellTracer* tracer;
 map<string, Register> registersFromName = {
         {"rax", Register::RAX},
         {"rbx", Register::RBX},
@@ -129,7 +131,25 @@ bool checkSudo() {
     return !effectiveUID;
 }
 
+void handleExit() {
+    if(tracer != nullptr) tracer->handleExit();
+}
+
+void sigHandler(int signal) {
+    handleExit();
+    exit(1);
+}
+
+void prepareSigHandler() {
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = sigHandler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, NULL);
+}
+
 int main(int argc, char* argv[]) {
+    prepareSigHandler();
     if(argc > 1) {
         if(!strcmp(argv[1], "--help")) {
             printHelpMessage();
@@ -152,8 +172,8 @@ int main(int argc, char* argv[]) {
             }
             if(!params.binaryArgs.size()) params.binaryArgs.push_back(params.binaryPath);
             if(!checkSudo()) Logger::getLogger().log(LogLevel::WARNING, "Running the tool without root rights (sudo) may cause issues.");
-            HellTracer tracer(params);
-            tracer.run();
+            tracer = new HellTracer(params);
+            tracer->run();
         } else {
             stringstream msg;
             msg << "File \033[;37m" << binaryPath << "\033[;31m does not exist !";

@@ -185,6 +185,7 @@ bool HellTracer::readBinaryHeader() {
                     if(idField[5] == 1) {
                         if(idField[7] == 0 || idField[7] == 3) {
                             this->fileEntry = *((unsigned long long int*)(idField + 0x18));
+                            if(this->fileEntry >= 0x400000) this->fileEntry -= 0x400000;
                             binaryRead.seekg(this->fileEntry, binaryRead.beg);
                             binaryRead.read((char*)&this->replacedFileEntry, 1);
                             binaryRead.close();
@@ -218,6 +219,24 @@ void HellTracer::convertArgs(vector<string> args, char** execArgs) {
         execArgs[argsAmount++] = strdup(args[i].c_str());
     }
     execArgs[argsAmount++] = NULL;
+}
+
+void HellTracer::fixEntryBreakpoint() {
+    this->fixedEntryBreakpoint = true;
+    ofstream binaryWrite;
+    do {
+        binaryWrite.open(this->params.binaryPath, ofstream::binary | ofstream::out | ofstream::in);
+        this_thread::sleep_for(std::chrono::milliseconds(10));
+    } while(!binaryWrite.is_open());
+    binaryWrite.seekp(this->fileEntry, binaryWrite.beg);
+    binaryWrite.write((char*)&this->replacedFileEntry, 1);
+    binaryWrite.close();
+    Logger::getLogger().log(LogLevel::INFO, "Restored breakpoint byte.");
+}
+
+void HellTracer::handleExit() {
+    kill(this->pid, SIGKILL);
+    if(!this->fixedEntryBreakpoint) this->fixEntryBreakpoint();
 }
 
 void HellTracer::run() {
@@ -257,13 +276,10 @@ void HellTracer::run() {
     if(this->memoryFd != -1) {
         user_regs_struct regs;
         Logger::getLogger().log(LogLevel::SUCCESS, "Target is running and ready to be traced !");
-        unsigned char* buf = (unsigned char*) malloc(10);
-        pread(this->memoryFd, buf, 10, regs.rip);
         ptrace(PTRACE_GETREGS,this->pid,NULL,&regs);
         regs.rip--;
         this->effectiveEntry = regs.rip;
         pwrite(this->memoryFd, &this->replacedFileEntry, 1, this->effectiveEntry);
-        pread(this->memoryFd, buf, 10, regs.rip);
         ptrace(PTRACE_SETREGS,this->pid,NULL,&regs);
         pid_t alive = this->pid;
         while(alive == this->pid) {
@@ -274,15 +290,7 @@ void HellTracer::run() {
         }
         close(this->memoryFd);
     } else Logger::getLogger().log(LogLevel::FATAL, "Unable to access memory of running target. Missing rights ?");
-    ofstream binaryWrite;
-    do {
-        binaryWrite.open(this->params.binaryPath, ofstream::binary | ofstream::out | ofstream::in);
-        this_thread::sleep_for(std::chrono::milliseconds(10));
-    } while(!binaryWrite.is_open());
-    binaryWrite.seekp(this->fileEntry, binaryWrite.beg);
-    binaryWrite.write((char*)&this->replacedFileEntry, 1);
-    binaryWrite.close();
-    Logger::getLogger().log(LogLevel::INFO, "Restored breakpoint byte.");
+    if(!this->fixedEntryBreakpoint) this->fixEntryBreakpoint();
     outputFile.close();
     chmod(this->params.outputPath.c_str(), S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR|S_IWGRP|S_IWOTH);
 }
