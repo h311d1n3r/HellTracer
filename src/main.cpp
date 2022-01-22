@@ -58,7 +58,7 @@ map<string, Register> registersFromName = {
         {"edi", Register::EDI},
         {"ebp", Register::EBP},
         {"esp", Register::ESP},
-        {"rip", Register::EIP},
+        {"eip", Register::EIP},
         {"all", Register::ALL}
 };
 #endif
