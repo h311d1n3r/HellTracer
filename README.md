@@ -1,6 +1,6 @@
 # HellTracer
 ## Description
-A Linux x64 tool to trace registers and memory regions.
+A Linux x86/x86-64 tool to trace registers and memory regions.
 ## Build the tool
 1. Clone the repository.
 2. Compile the tool with `make`.
