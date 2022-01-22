@@ -14,7 +14,11 @@
 
 using namespace std;
 
+#if __x86_64__
 vector<string> orderedRegNames({{"rip","rax","rbx","rcx","rdx","rsi","rdi","rbp","rsp","r8","r9","r10","r11","r12","r13","r14","r15"}});
+#else
+vector<string> orderedRegNames({{"eip","eax","ebx","ecx","edx","esi","edi","ebp","esp"}});
+#endif
 
 unsigned long long int HellTracer::parseRegValue(Register reg, user_regs_struct regs, unsigned long long int ip) {
     switch (reg) {
