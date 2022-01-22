@@ -7,6 +7,7 @@
 
 using namespace std;
 
+#if __x86_64__
 enum Register {
     RAX,
     RBX,
@@ -27,6 +28,20 @@ enum Register {
     RIP,
     ALL
 };
+#else
+enum Register {
+    EAX,
+    EBX,
+    ECX,
+    EDX,
+    ESI,
+    EDI,
+    EBP,
+    ESP,
+    EIP,
+    ALL
+};
+#endif
 
 extern map<string, Register> registersFromName;
 

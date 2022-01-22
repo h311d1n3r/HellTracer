@@ -17,11 +17,17 @@ const string TOOL_TITLE = "  _  _     _ _ _____                    \n"
                           " | __ / -_) | | | || '_/ _` / _/ -_) '_|\n"
                           " |_||_\\___|_|_| |_||_| \\__,_\\__\\___|_|  \n"
                           "                                        ";
-const string VERSION = "1.0.1";
+const string VERSION = "1.0.2";
 const string AUTHOR = "h311d1n3r";
+#if __x86_64__
+const string ARCHITECTURE = "64bit";
+#else
+const string ARCHITECTURE = "32bit";
+#endif
 
 BinaryParams params;
 HellTracer* tracer;
+#if __x86_64__
 map<string, Register> registersFromName = {
         {"rax", Register::RAX},
         {"rbx", Register::RBX},
@@ -42,12 +48,29 @@ map<string, Register> registersFromName = {
         {"rip", Register::RIP},
         {"all", Register::ALL}
 };
+#else
+map<string, Register> registersFromName = {
+        {"eax", Register::EAX},
+        {"ebx", Register::EBX},
+        {"ecx", Register::ECX},
+        {"edx", Register::EDX},
+        {"esi", Register::ESI},
+        {"edi", Register::EDI},
+        {"ebp", Register::EBP},
+        {"esp", Register::ESP},
+        {"rip", Register::EIP},
+        {"all", Register::ALL}
+};
+#endif
 
 void printHelpMessage() {
     Logger::getLogger().log(LogLevel::INFO, TOOL_TITLE, false, true, false);
     stringstream version;
     version << " Version: " << VERSION;
     Logger::getLogger().log(LogLevel::INFO, version.str(), false, true, false);
+    stringstream arch;
+    arch << " Architecture: " << ARCHITECTURE;
+    Logger::getLogger().log(LogLevel::INFO, arch.str(), false, false, false);
     stringstream author;
     author << " Author: " << AUTHOR;
     Logger::getLogger().log(LogLevel::INFO, author.str(), false, false, false);
@@ -58,14 +81,22 @@ void printHelpMessage() {
     paramsList << "\033[1;33m   entry\033[0;36m -> Specifies the program entry point. e.g: 'entry 0x401000'" << endl;
     paramsList << "\033[1;33m   start\033[0;36m -> Specifies the program start address for tracing. e.g: 'entry 0x4010f0'" << endl;
     paramsList << "\033[1;33m   end\033[0;36m -> Specifies the program end address for tracing. e.g: 'entry 0x40115e'" << endl;
+#if __x86_64__
     paramsList << "\033[1;33m   mem\033[0;36m -> Turns on tracing of the specified memory regions. e.g: 'mem ascii=[[rbp-0x40]:4]', 'mem ascii=[@0x40200f:15]', 'mem ascii=[rsi]'" << endl;
+#else
+    paramsList << "\033[1;33m   mem\033[0;36m -> Turns on tracing of the specified memory regions. e.g: 'mem ascii=[[ebp-0x40]:4]', 'mem ascii=[@0x40200f:15]', 'mem ascii=[esi]'" << endl;
+#endif
     paramsList << "\033[1;33m   args\033[0;36m -> Specifies the arguments to be passed to the traced binary. e.g: 'args \"./name.bin hello world\"'" << endl;
     paramsList << "\033[1;33m   output\033[0;36m -> Specifies the output file (.csv). e.g: 'output out.csv'" << endl;
     Logger::getLogger().log(LogLevel::INFO, paramsList.str(), false, true, false);
     Logger::getLogger().log(LogLevel::INFO, "Flags:", false, true, false);
     stringstream flagsList;
     flagsList << "\033[1;33m   help\033[0;36m -> Displays this message." << endl;
+#if __x86_64__
     flagsList << "\033[1;33m   reg_name\033[0;36m -> Turns on tracing of register reg_name. e.g: 'rip', 'rcx', 'rsp', 'all'" << endl;
+#else
+    flagsList << "\033[1;33m   reg_name\033[0;36m -> Turns on tracing of register reg_name. e.g: 'eip', 'ecx', 'esp', 'all'" << endl;
+#endif
     Logger::getLogger().log(LogLevel::INFO, flagsList.str(), false, true, false);
 }
 

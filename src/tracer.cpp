@@ -16,10 +16,11 @@ using namespace std;
 
 vector<string> orderedRegNames({{"rip","rax","rbx","rcx","rdx","rsi","rdi","rbp","rsp","r8","r9","r10","r11","r12","r13","r14","r15"}});
 
-unsigned long long int HellTracer::parseRegValue(Register reg, user_regs_struct regs, unsigned long long int rip) {
+unsigned long long int HellTracer::parseRegValue(Register reg, user_regs_struct regs, unsigned long long int ip) {
     switch (reg) {
+#if __x86_64__
         case RIP:
-            return rip;
+            return ip;
         case RAX:
             return regs.rax;
         case RBX:
@@ -52,6 +53,26 @@ unsigned long long int HellTracer::parseRegValue(Register reg, user_regs_struct 
             return regs.r14;
         case R15:
             return regs.r15;
+#else
+        case EIP:
+            return ip;
+        case EAX:
+            return regs.eax;
+        case EBX:
+            return regs.ebx;
+        case ECX:
+            return regs.ecx;
+        case EDX:
+            return regs.edx;
+        case ESI:
+            return regs.esi;
+        case EDI:
+            return regs.edi;
+        case EBP:
+            return regs.ebp;
+        case ESP:
+            return regs.esp;
+#endif
     }
     return 0;
 }
@@ -131,7 +152,11 @@ int HellTracer::parseMemStr(string mem, unsigned char*& buffer, user_regs_struct
                 relativeToEntry = true;
                 skipped = skipped.substr(1);
             }
+#if __x86_64__
             if(!inputToNumber(skipped, val)) val = parseRegValue(registersFromName[skipped], regs, regs.rip);
+#else
+            if(!inputToNumber(skipped, val)) val = parseRegValue(registersFromName[skipped], regs, regs.eip);
+#endif
             if(relativeToEntry) val = val - this->params.entryAddress + this->effectiveEntry;
             buffer = (unsigned char*) &val;
             return sizeof(val);
@@ -141,13 +166,25 @@ int HellTracer::parseMemStr(string mem, unsigned char*& buffer, user_regs_struct
 }
 
 void HellTracer::writeStepResults(ofstream& outputFile, user_regs_struct regs) {
+#if __x86_64__
     unsigned long long int rip = this->params.entryAddress ? (this->params.entryAddress + regs.rip - this->effectiveEntry) : regs.rip;
+#else
+    unsigned long long int eip = this->params.entryAddress ? (this->params.entryAddress + regs.eip - this->effectiveEntry) : regs.eip;
+#endif
+#if __x86_64__
     if((!params.startAddress || params.startAddress <= rip) && (!params.endAddress || params.endAddress >= rip)) {
+#else
+    if((!params.startAddress || params.startAddress <= eip) && (!params.endAddress || params.endAddress >= eip)) {
+#endif
         for (string regName: orderedRegNames) {
             if (params.trackedRegisters[0] == Register::ALL ||
                 find(params.trackedRegisters.begin(), params.trackedRegisters.end(), registersFromName[regName]) !=
                 params.trackedRegisters.end()) {
+#if __x86_64__
                 unsigned long long int regValue = parseRegValue(registersFromName[regName], regs, rip);
+#else
+                unsigned long long int regValue = parseRegValue(registersFromName[regName], regs, eip);
+#endif
                 outputFile << "=\"0x" << hex << setfill('0') << setw(8) << regValue << "\",";
             }
         }
@@ -181,11 +218,20 @@ bool HellTracer::readBinaryHeader() {
             char* idField = (char*) malloc(0x20);
             binaryRead.read(idField, 0x20);
             if(idField[0] == 0x7f && idField[1] == 'E' && idField[2] == 'L' && idField[3] == 'F') {
+#if __x86_64__
                 if(idField[4] == 2) {
+#else
+                if(idField[4] == 1) {
+#endif
                     if(idField[5] == 1) {
                         if(idField[7] == 0 || idField[7] == 3) {
+#if __x86_64__
                             this->fileEntry = *((unsigned long long int*)(idField + 0x18));
                             if(this->fileEntry >= 0x400000) this->fileEntry -= 0x400000;
+#else
+                            this->fileEntry = *((unsigned int*)(idField + 0x18));
+                            if(this->fileEntry >= 0x8048000) this->fileEntry -= 0x8048000;
+#endif
                             binaryRead.seekg(this->fileEntry, binaryRead.beg);
                             binaryRead.read((char*)&this->replacedFileEntry, 1);
                             binaryRead.close();
@@ -201,7 +247,11 @@ bool HellTracer::readBinaryHeader() {
                             return true;
                         } else Logger::getLogger().log(LogLevel::FATAL, "The specified file can't be run on a Linux architecture.");
                     } else Logger::getLogger().log(LogLevel::FATAL, "HellTracer currently handles little endian files only.");
-                } else Logger::getLogger().log(LogLevel::FATAL, "HellTracer currently handles x64 files only.");
+#if __x86_64__
+                } else Logger::getLogger().log(LogLevel::FATAL, "This HellTracer version handles 64bit files only.");
+#else
+                } else Logger::getLogger().log(LogLevel::FATAL, "This HellTracer version handles 32bit files only.");
+#endif
             } else Logger::getLogger().log(LogLevel::FATAL, "The specified binary is not a ELF file.");
         } else {
             stringstream error;
@@ -277,8 +327,13 @@ void HellTracer::run() {
         user_regs_struct regs;
         Logger::getLogger().log(LogLevel::SUCCESS, "Target is running and ready to be traced !");
         ptrace(PTRACE_GETREGS,this->pid,NULL,&regs);
+#if __x86_64__
         regs.rip--;
         this->effectiveEntry = regs.rip;
+#else
+        regs.eip--;
+        this->effectiveEntry = regs.eip;
+#endif
         pwrite(this->memoryFd, &this->replacedFileEntry, 1, this->effectiveEntry);
         ptrace(PTRACE_SETREGS,this->pid,NULL,&regs);
         pid_t alive = this->pid;
