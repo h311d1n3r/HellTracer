@@ -21,6 +21,7 @@ string trim(string str) {
 }
 
 bool inputToNumber(string input, unsigned long long int& number) {
+    input = toLowercase(input);
     size_t inputEnd = 0;
     int base = 10;
     if(input.find("0x") == 0) {
@@ -37,4 +38,10 @@ string toUppercase(string input) {
     string upperCase = input;
     for (char& c: upperCase) c = toupper(c);
     return upperCase;
+}
+
+string toLowercase(string input) {
+    string lowerCase = input;
+    for (char& c: lowerCase) c = tolower(c);
+    return lowerCase;
 }

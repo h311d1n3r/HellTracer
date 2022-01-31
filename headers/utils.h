@@ -30,5 +30,11 @@ bool inputToNumber(string input, unsigned long long int& number);
  * @return The converted string
  */
 string toUppercase(string input);
+/**
+ * @brief Converts a string into its lowercase version
+ * @param input The string to be converted
+ * @return The converted string
+ */
+string toLowercase(string input);
 
 #endif
