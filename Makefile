@@ -22,3 +22,16 @@ compile:
 clean:
 	@echo "Cleaning output directory..."
 	@rm -rf $(HELLTRACER_OUT)
+	
+.PHONY: doc
+doc:
+ifeq (, $(shell which doxygen))
+	@echo "\"doxygen\" could not be found... Please install doxygen package."
+else
+ifeq (, $(shell which dot))
+	@echo "\"dot\" could not be found... Please install graphviz package."
+else
+	@echo "Generating documentation..."
+	@doxygen Doxyfile
+endif
+endif
