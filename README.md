@@ -3,7 +3,7 @@
 A Linux x86/x86-64 tool to trace registers and memory regions.
 ## Build the tool
 1. Clone the repository.
-2. Compile the tool with `make`.
+2. Compile the tool with `make`. Use `make doc` if you want to generate the Doxygen documentation.
 3. Add the generated `bin` directory to your path using `PATH=$PATH:~/path/to/the/repo/bin`.
 ## How to use ?
 ### Syntax
