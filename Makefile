@@ -21,6 +21,7 @@ compile:
 	@echo "Compiling 64bit version..."
 	@$(CC) $(COMPILE_FLAGS) $(COMPILE_64_FLAGS) $(HELLTRACER_SRC)/*.cpp -I$(HELLTRACER_INC) -o$(HELLTRACER_OUT)/$(HELLTRACER_64_NAME)
 
+.PHONY: test
 test:
 	@mkdir -p $(HELLTRACER_TEST_OUT)
 	@echo "Compiling test binaries..."
