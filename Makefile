@@ -26,10 +26,10 @@ test:
 	@mkdir -p $(HELLTRACER_TEST_OUT)
 	@echo "Compiling test binaries..."
 	for test_src_file in $(HELLTRACER_TEST_SRC)/* ; do \
-		echo $test_src_file \
-		outputname = $(basename -- "$test_src_file") \
+		echo $$test_src_file \
+		outputname = $(basename -- $$test_src_file) \
 		echo $outputname \
-		outputname = "${outputname%.*}" \
+		outputname = ${outputname%.*} \
 		echo $outputname \
 		$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $$test_src_file -o$(HELLTRACER_TEST_OUT)/${$(basename $outputname) ; \
 	done
