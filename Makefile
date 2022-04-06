@@ -25,7 +25,9 @@ compile:
 test:
 	@mkdir -p $(HELLTRACER_TEST_OUT)
 	@echo "Compiling test binaries..."
-	@$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $(HELLTRACER_TEST_SRC)/*.cpp -o$(HELLTRACER_TEST_OUT)/
+	for test_src_file in $(HELLTRACER_TEST_SRC); do
+		@$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $(HELLTRACER_TEST_SRC)/test_src_file -o$(HELLTRACER_TEST_OUT)/$(test_src_file -- "$f" .cpp).o
+	done
 
 clean:
 	@echo "Cleaning output directory..."
