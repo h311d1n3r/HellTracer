@@ -16,7 +16,7 @@ jobs:
     - name: prepare_env
       run: |
         sudo apt update
-        sudo apt install gcc g++
+        sudo apt install gcc-multilib g++-multilib
     - name: make
       run: make
     - name: append_path
