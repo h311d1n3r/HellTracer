@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 HELLTRACER_32_NAME=helltracer32
 HELLTRACER_64_NAME=helltracer64
 
