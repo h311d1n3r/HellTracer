@@ -17,9 +17,11 @@ jobs:
       run: |
         sudo apt update
         sudo apt install gcc-multilib g++-multilib
-    - name: make
+    - name: compile
       run: make
     - name: append_path
       run: echo "`pwd`/bin" >> $GITHUB_PATH
-    - name: prepare_tests
+    - name: compile_tests
       run: make test
+    - name: run_test_1:
+      run: ls test/bin
