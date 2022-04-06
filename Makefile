@@ -31,7 +31,7 @@ test:
 		echo $outputname \
 		outputname = ${outputname%.*} \
 		echo $outputname \
-		$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $$test_src_file -o$(HELLTRACER_TEST_OUT)/${$(basename $outputname) ; \
+		$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $$test_src_file -o$(HELLTRACER_TEST_OUT)/$outputname ; \
 	done
 
 clean:
