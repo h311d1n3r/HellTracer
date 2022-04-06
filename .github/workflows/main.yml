@@ -21,3 +21,5 @@ jobs:
       run: make
     - name: append_path
       run: echo "`pwd`/bin" >> $GITHUB_PATH
+    - name: prepare_tests
+      run: make test
