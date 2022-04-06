@@ -1,0 +1,22 @@
+name: deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check_app:
+    runs-on: ubuntu-latest
+    steps:
+    - name: prepare_env
+    - run:
+        sudo apt update
+        sudo apt install gcc-17 g++-17
+    - uses: actions/checkout@v3
+    - name: make
+    - run: make
+    - name: append_path
+    - run: echo "`pwd`/bin" >> $GITHUB_PATH
+      
