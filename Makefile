@@ -4,6 +4,8 @@ HELLTRACER_64_NAME=helltracer64
 HELLTRACER_SRC=./src
 HELLTRACER_INC=./headers
 HELLTRACER_OUT=./bin
+HELLTRACER_TEST_SRC=./test/src
+HELLTRACER_TEST_OUT=./test/bin
 
 CC=g++
 COMPILE_FLAGS=-std=c++17
@@ -18,10 +20,15 @@ compile:
 	@$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $(HELLTRACER_SRC)/*.cpp -I$(HELLTRACER_INC) -o$(HELLTRACER_OUT)/$(HELLTRACER_32_NAME)
 	@echo "Compiling 64bit version..."
 	@$(CC) $(COMPILE_FLAGS) $(COMPILE_64_FLAGS) $(HELLTRACER_SRC)/*.cpp -I$(HELLTRACER_INC) -o$(HELLTRACER_OUT)/$(HELLTRACER_64_NAME)
-			  
+
+test:
+	@mkdir -p $(HELLTRACER_TEST_OUT)
+	@echo "Compiling test binaries..."
+	@$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $(HELLTRACER_TEST_SRC)/*.cpp -o$(HELLTRACER_TEST_OUT)/
+
 clean:
 	@echo "Cleaning output directory..."
-	@rm -rf $(HELLTRACER_OUT)
+	@rm -rf $(HELLTRACER_OUT) $(HELLTRACER_TEST_OUT)
 	
 .PHONY: doc
 doc:
