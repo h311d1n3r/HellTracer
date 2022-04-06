@@ -11,12 +11,13 @@ jobs:
   check_app:
     runs-on: ubuntu-latest
     steps:
+    - name: clone_project
+      uses: actions/checkout@v3
     - name: prepare_env
-    - run:
+      run:
         sudo apt update
         sudo apt install gcc-17 g++-17
-    - uses: actions/checkout@v3
     - name: make
-    - run: make
+      run: make
     - name: append_path
-    - run: echo "`pwd`/bin" >> $GITHUB_PATH
+      run: echo "`pwd`/bin" >> $GITHUB_PATH
