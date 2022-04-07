@@ -25,7 +25,7 @@ compile:
 test:
 	@mkdir -p $(HELLTRACER_TEST_OUT)
 	@echo "Compiling test binaries..."
-	for test_src_file in $(HELLTRACER_TEST_SRC)/* ; do \
+	@for test_src_file in $(HELLTRACER_TEST_SRC)/* ; do \
 		$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $$test_src_file -o$(HELLTRACER_TEST_OUT)/`echo $$test_src_file | rev | cut -d'/' -f 1 | rev | cut -d'.' -f 1)` ; \
 	done
 
