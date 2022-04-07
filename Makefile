@@ -26,8 +26,7 @@ test:
 	@mkdir -p $(HELLTRACER_TEST_OUT)
 	@echo "Compiling test binaries..."
 	for test_src_file in $(HELLTRACER_TEST_SRC)/* ; do \
-		IFS=';' read -ra splitted <<< $$test_src_file;
-		$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $$test_src_file -o$(HELLTRACER_TEST_OUT)/${splitted[1]} ; \
+		$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $$test_src_file -o$(HELLTRACER_TEST_OUT)/"$(echo $$test_src_file | cut -d'_' -f2)" ; \
 	done
 
 clean:
