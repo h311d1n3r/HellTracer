@@ -26,5 +26,5 @@ jobs:
     - name: run_test_1
       run: |
         cd test/bin
-        helltracer32 ./test_1 -output ./test_1.csv -entry 0x401070 -start 0x4011ad -end 0x4011d6 --rip -mem [ebp-4]
+        helltracer32 ./test_1 -output ./test_1.csv -entry 0x401070 -start 0x4011ad -end 0x4011d6 --rip -mem [ebp-4:4]
         cat ./test_1.csv
