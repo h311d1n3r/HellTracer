@@ -4,7 +4,8 @@ HELLTRACER_64_NAME=helltracer64
 HELLTRACER_SRC=./src
 HELLTRACER_INC=./headers
 HELLTRACER_OUT=./bin
-HELLTRACER_TEST_SRC=./test/src
+HELLTRACER_TEST_SRC_32=./test/src/x86
+HELLTRACER_TEST_SRC_64=./test/src/x64
 HELLTRACER_TEST_OUT=./test/bin
 
 CC=g++
@@ -25,8 +26,11 @@ compile:
 test:
 	@mkdir -p $(HELLTRACER_TEST_OUT)
 	@echo "Compiling test binaries..."
-	@for test_src_file in $(HELLTRACER_TEST_SRC)/* ; do \
+	@for test_src_file in $(HELLTRACER_TEST_SRC_32)/* ; do \
 		$(CC) $(COMPILE_FLAGS) $(COMPILE_32_FLAGS) $$test_src_file -o$(HELLTRACER_TEST_OUT)/`echo $$test_src_file | rev | cut -d'/' -f 1 | rev | cut -d'.' -f 1)` ; \
+	done
+	@for test_src_file in $(HELLTRACER_TEST_SRC_64)/* ; do \
+		$(CC) $(COMPILE_FLAGS) $(COMPILE_64_FLAGS) $$test_src_file -o$(HELLTRACER_TEST_OUT)/`echo $$test_src_file | rev | cut -d'/' -f 1 | rev | cut -d'.' -f 1)` ; \
 	done
 
 clean:
