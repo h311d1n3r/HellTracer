@@ -13,7 +13,7 @@ COMPILE_FLAGS=-std=c++17
 COMPILE_32_FLAGS=-m32
 COMPILE_64_FLAGS=-m64
 
-HellTracer:	clean compile
+HellTracer: clean compile
 
 compile:
 	@mkdir -p $(HELLTRACER_OUT)
