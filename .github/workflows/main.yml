@@ -23,7 +23,7 @@ jobs:
       run: echo "`pwd`/bin" >> $GITHUB_PATH
     - name: compile_tests
       run: make test
-    - name: run_test_1
+    - name: run_test_2
       run: |
         cd test/bin
         helltracer32 ./test_2 -output ./test_2.csv -entry 0x401070 -start 0x4011ad -end 0x4011d6 --eip -mem [ebp-4:4]
